@@ -20,6 +20,8 @@ class McpWriter
     {
         $this->installBoostMcp($sail);
 
+        $this->installThirdPartyMcpServers();
+
         if ($herd instanceof Herd) {
             $this->installHerdMcp($herd);
         }
@@ -76,6 +78,34 @@ class McpWriter
 
         if (! $installed) {
             throw new RuntimeException('Failed to install Herd MCP: could not write configuration');
+        }
+    }
+
+    protected function installThirdPartyMcpServers(): void
+    {
+        $composer = new McpComposer();
+        $servers = $composer->collect();
+
+        foreach ($servers as $key => $config) {
+            $command = $config['command'] ?? null;
+            $args = $config['args'] ?? [];
+            $env = $config['env'] ?? [];
+
+            if (! is_string($command) || $command === '') {
+                // Skip invalid definitions
+                continue;
+            }
+
+            $installed = $this->agent->installMcp(
+                key: $key,
+                command: $command,
+                args: is_array($args) ? $args : [],
+                env: is_array($env) ? $env : []
+            );
+
+            if (! $installed) {
+                throw new RuntimeException("Failed to install MCP server '{$key}': could not write configuration");
+            }
         }
     }
 }

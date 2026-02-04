@@ -47,6 +47,11 @@ class Composer
         return self::packagesDirectoriesWithBoostSubpath('skills');
     }
 
+    public static function packagesDirectoriesWithBoostMcp(): array
+    {
+        return self::packagesDirectoriesWithBoostSubpath('mcp');
+    }
+
     /**
      * @param  string|null  $subpath  Optional subpath under resources/boost/ (e.g., 'guidelines')
      */

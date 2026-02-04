@@ -13,6 +13,7 @@ class ThirdPartyPackage
         public readonly string $name,
         public readonly bool $hasGuidelines,
         public readonly bool $hasSkills,
+        public readonly bool $hasMcp = false,
     ) {
         //
     }
@@ -26,10 +27,12 @@ class ThirdPartyPackage
     {
         $withGuidelines = Composer::packagesDirectoriesWithBoostGuidelines();
         $withSkills = Composer::packagesDirectoriesWithBoostSkills();
+        $withMcp = Composer::packagesDirectoriesWithBoostMcp();
 
         $allPackageNames = array_unique(array_merge(
             array_keys($withGuidelines),
-            array_keys($withSkills)
+            array_keys($withSkills),
+            array_keys($withMcp)
         ));
 
         return collect($allPackageNames)
@@ -38,6 +41,7 @@ class ThirdPartyPackage
                     name: $name,
                     hasGuidelines: isset($withGuidelines[$name]),
                     hasSkills: isset($withSkills[$name]),
+                    hasMcp: isset($withMcp[$name]),
                 ),
             ]);
     }
@@ -45,9 +49,13 @@ class ThirdPartyPackage
     public function featureLabel(): string
     {
         return match (true) {
+            $this->hasGuidelines && $this->hasSkills && $this->hasMcp => 'guidelines, skills, mcp',
             $this->hasGuidelines && $this->hasSkills => 'guidelines, skills',
-            $this->hasGuidelines => 'guideline',
+            $this->hasGuidelines && $this->hasMcp => 'guidelines, mcp',
+            $this->hasSkills && $this->hasMcp => 'skills, mcp',
+            $this->hasGuidelines => 'guidelines',
             $this->hasSkills => 'skills',
+            $this->hasMcp => 'mcp',
             default => '',
         };
     }
